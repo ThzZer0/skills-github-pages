@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Day Game Giulia</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #fff0f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 80%;
+            height: 80%;
+            position: relative;
+            overflow: hidden;
+        }
+        h1 {
+            color: #ff69b4;
+        }
+        .btn {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #ff1493;
+        }
+        .moving-btn {
+            position: absolute;
+            transition: all 0.2s ease;
+        }
+        .hidden {
+            display: none;
+        }
+        textarea {
+            width: 100%;
+            height: 60px;
+            margin: 10px 0;
+        }
+        #final-message {
+            font-size: 18px;
+            color: #ff1493;
+            margin-top: 20px;
+        }
+        #results {
+            text-align: left;
+            margin-top: 20px;
+        }
+        #level1, #level2 {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="game-container">
+        <div id="start-screen">
+            <h1>Valentine's Day Game Giulia</h1>
+            <p style="font-size: 18px; font-weight: bold;">Amor, se está pronta aperte em começar</p>
+            <button class="btn" onclick="startGame()">Começar</button>
+        </div>
+
+        <div id="level1" class="hidden">
+            <h2>Você me ama?</h2>
+            <button class="btn moving-btn" id="yesBtn">Sim</button>
+            <button class="btn moving-btn" id="noBtn">Não</button>
+            <button class="btn hidden" id="fixedYesBtn" onclick="nextLevel()">Sim ❤️</button>
+        </div>
+
+        <div id="level2" class="hidden">
+            <h2>Qual foi o horário do nosso primeiro beijo?</h2>
+            <div id="time-buttons"></div>
+        </div>
+
+        <div id="level3" class="hidden">
+            <h2>O que eu mais amo em você?</h2>
+            <div id="japanese-options"></div>
+        </div>
+
+        <div id="level4" class="hidden">
+            <h2>Perguntas e Respostas</h2>
+            <div id="questions"></div>
+            <button class="btn" onclick="nextLevel()">Avançar</button>
+        </div>
+
+        <div id="level5" class="hidden">
+            <h2>Você tem direito a um pedido!</h2>
+            <textarea id="wish" placeholder="Digite seu pedido aqui"></textarea>
+            <button class="btn" onclick="nextLevel()">Avançar</button>
+        </div>
+
+        <div id="level6" class="hidden">
+            <h2>Amor ❤️</h2>
+            <p>Te amo muito, obrigado por ser companheira e estar ao meu lado, sou muito feliz e grato por você ser a minha namorada, te amo para todo o sempre!</p>
+            <p>Feliz Valentine's Day</p>
+            <p>"Você foi a minha melhor escolha"</p>
+            <img src="C:\Users\Phone Brasil\Desktop\projeto\teamo.png" alt="Nossa foto" style="max-width: 100%; height: auto;">
+            <button class="btn" onclick="showResults()">Resultados</button>
+        </div>
+
+        <div id="results" class="hidden"></div>
+    </div>
+
+    <script>
+        let currentLevel = 0;
+        let speed = 2.5; // Aumentei a velocidade inicial
+        let answers = {};
+        const levels = ['start-screen', 'level1', 'level2', 'level3', 'level4', 'level5', 'level6'];
+
+        function startGame() {
+            nextLevel();
+        }
+
+        function nextLevel() {
+            document.getElementById(levels[currentLevel]).classList.add('hidden');
+            currentLevel++;
+            document.getElementById(levels[currentLevel]).classList.remove('hidden');
+
+            if (currentLevel === 1) {
+                setTimeout(showFixedYesButton, 10000);
+                setInterval(moveLevel1Buttons, 50);
+                document.addEventListener('mousemove', avoidMouse);
+            } else if (currentLevel === 2) {
+                setupLevel2();
+                setInterval(moveTimeButtons, 30); // Aumentei a frequência de atualização
+            } else if (currentLevel === 3) {
+                setupLevel3();
+            } else if (currentLevel === 4) {
+                setupLevel4();
+            }
+        }
+
+        function moveLevel1Buttons() {
+            const buttons = document.querySelectorAll('#level1 .moving-btn');
+            const container = document.getElementById('game-container');
+            const rect = container.getBoundingClientRect();
+            
+            buttons.forEach(btn => {
+                let newX = parseFloat(btn.style.left || 0) + (Math.random() - 0.5) * 5;
+                let newY = parseFloat(btn.style.top || 0) + (Math.random() - 0.5) * 5;
+
+                newX = Math.max(0, Math.min(newX, rect.width - btn.offsetWidth));
+                newY = Math.max(0, Math.min(newY, rect.height - btn.offsetHeight));
+
+                btn.style.left = `${newX}px`;
+                btn.style.top = `${newY}px`;
+            });
+        }
+
+        function avoidMouse(event) {
+            const buttons = document.querySelectorAll('#level1 .moving-btn');
+            const container = document.getElementById('game-container');
+            const rect = container.getBoundingClientRect();
+            
+            buttons.forEach(btn => {
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                const btnRect = btn.getBoundingClientRect();
+                const btnCenterX = btnRect.left + btnRect.width / 2 - rect.left;
+                const btnCenterY = btnRect.top + btnRect.height / 2 - rect.top;
+
+                const distance = Math.sqrt(Math.pow(mouseX - btnCenterX, 2) + Math.pow(mouseY - btnCenterY, 2));
+                const threshold = 100;
+
+                if (distance < threshold) {
+                    let angle = Math.atan2(mouseY - btnCenterY, mouseX - btnCenterX);
+                    let newX = btnCenterX - Math.cos(angle) * threshold;
+                    let newY = btnCenterY - Math.sin(angle) * threshold;
+
+                    newX = Math.max(0, Math.min(newX, rect.width - btnRect.width));
+                    newY = Math.max(0, Math.min(newY, rect.height - btnRect.height));
+
+                    btn.style.left = `${newX}px`;
+                    btn.style.top = `${newY}px`;
+                }
+            });
+        }
+
+        function showFixedYesButton() {
+            document.getElementById('fixedYesBtn').classList.remove('hidden');
+        }
+
+        function setupLevel2() {
+            const times = ['18:15', '18:25', '18:35', '18:45', '18:05'];
+            const container = document.getElementById('time-buttons');
+            container.innerHTML = '';
+            times.forEach(time => {
+                const btn = document.createElement('button');
+                btn.textContent = time;
+                btn.className = 'btn moving-btn';
+                btn.onclick = () => checkAnswer(time);
+                container.appendChild(btn);
+            });
+            positionTimeButtons();
+        }
+
+        function positionTimeButtons() {
+            const buttons = document.querySelectorAll('#level2 .moving-btn');
+            const container = document.getElementById('game-container');
+            const rect = container.getBoundingClientRect();
+            buttons.forEach(btn => {
+                const x = Math.random() * (rect.width - btn.offsetWidth);
+                const y = Math.random() * (rect.height - btn.offsetHeight);
+                btn.style.left = `${x}px`;
+                btn.style.top = `${y}px`;
+                btn.dx = (Math.random() - 0.5) * 2 * speed;
+                btn.dy = (Math.random() - 0.5) * 2 * speed;
+            });
+        }
+
+        function moveTimeButtons() {
+            const buttons = document.querySelectorAll('#level2 .moving-btn');
+            const container = document.getElementById('game-container');
+            const rect = container.getBoundingClientRect();
+            
+            buttons.forEach(btn => {
+                let newX = parseFloat(btn.style.left) + btn.dx;
+                let newY = parseFloat(btn.style.top) + btn.dy;
+
+                if (newX <= 0 || newX >= rect.width - btn.offsetWidth) {
+                    btn.dx *= -1;
+                }
+                if (newY <= 0 || newY >= rect.height - btn.offsetHeight) {
+                    btn.dy *= -1;
+                }
+
+                btn.style.left = `${newX}px`;
+                btn.style.top = `${newY}px`;
+            });
+        }
+
+        function checkAnswer(time) {
+            if (time === '18:25') {
+                nextLevel();
+            } else {
+                speed += 0.5; // Aumentei o incremento de velocidade
+                alert('Resposta incorreta. Tente novamente!');
+            }
+        }
+
+        function setupLevel3() {
+            const options = [
+                { ja: 'めとえがお', en: 'Olhos e sorriso', correct: true },
+                { ja: 'くちととうじ', en: 'Boca e orelha' },
+                { ja: 'かおとかみ', en: 'Rosto e cabelo' },
+                { ja: 'あしとうで', en: 'Perna e braço' }
+            ];
+            const container = document.getElementById('japanese-options');
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.textContent = option.ja;
+                btn.className = 'btn';
+                btn.onclick = () => revealTranslation(btn, option);
+                container.appendChild(btn);
+            });
+        }
+
+        function revealTranslation(btn, option) {
+            btn.textContent = `${option.ja} - ${option.en}`;
+            if (option.correct) {
+                setTimeout(nextLevel, 2000);
+            }
+        }
+
+        function setupLevel4() {
+            const questions = [
+                'Qual seu momento mais feliz ao meu lado?',
+                'O que você mais ama no nosso relacionamento?',
+                'O que eu faço que você gosta muito?',
+                '2 qualidades e 2 defeitos em mim?'
+            ];
+            const container = document.getElementById('questions');
+            container.innerHTML = '';
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.innerHTML = `
+                    <p>${q}</p>
+                    <textarea id="answer${index}" placeholder="Sua resposta"></textarea>
+                `;
+                container.appendChild(questionDiv);
+            });
+        }
+
+        function showResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<h2>Suas Respostas:</h2>';
+            
+            for (let i = 0; i < 4; i++) {
+                const answer = document.getElementById(`answer${i}`).value;
+                resultsDiv.innerHTML += `<p><strong>Pergunta ${i+1}:</strong> ${answer}</p>`;
+            }
+            
+            const wish = document.getElementById('wish').value;
+            resultsDiv.innerHTML += `<p><strong>Seu pedido:</strong> ${wish}</p>`;
+            
+            document.getElementById('level6').classList.add('hidden');
+            resultsDiv.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
